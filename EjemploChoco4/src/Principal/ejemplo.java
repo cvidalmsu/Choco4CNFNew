@@ -20,47 +20,29 @@ class CNF{
 
 public class ejemplo {
 	static CNF chocoList = new CNF();
-  	 
-    public static void main(String[] args) throws IOException, ParseException {
-      	// 1. Create a Model
-        Model model = new Model("problem");
-        parseStream(args[0]);
-        
-        //parseStream("CNF/LargeAutomotive_wp.cnf");
-       // parseStream("CNF/ejemplo7.cnf");
-        
+  	static BoolVar[] variables = null;
+  	static Model model = new Model("problem");
+  	
+  	public static void defineVariables() {
         ///////////////
-        BoolVar[] variables = new BoolVar[chocoList.numVariables];
+        variables = new BoolVar[chocoList.numVariables];
         for(int i = 0; i < chocoList.numVariables; i++) {
         	variables[i] = model.boolVar("c" + (i+1));
         }
+  	}
+  	
+    public static void main(String[] args) throws IOException, ParseException {
+        parseStream(args[0]);
         
-        /////
-        for(int i=0; i < chocoList.numClauses;i++) {
-        	BoolVar[] used = new BoolVar[chocoList.clauses.get(i).size()];
-        	int j=0;
-        	for(Integer var: chocoList.clauses.get(i)) {
-        		if (var < 0)
-        			used[j] = variables[(-1*var)-1].not();
-        		else
-        			used[j] = variables[var-1];
-        		
-        		j++;
-        	}	
-     	
-        	model.or(used).post();
-        }
-
-   //     System.out.println("Start checking");
         if (model.getSolver().solve())
-          	System.out.println("SATISFIABLE");
+          	System.out.println(args[0] + " - " + chocoList.numVariables + " vars " + chocoList.numClauses + " clauses: SATISFIABLE");
         else
-        	System.out.println("UNSATISFIABLE");        
+        	System.out.println(args[0] + " - " + chocoList.numVariables + " vars " + chocoList.numClauses + " clauses: UNSATISFIABLE");        
     }
     
     private static void parseStream(String source) throws IOException, ParseException {                                                                
-        File file = new File(source);
-        Scanner scanner = new Scanner(file);                                                                
+         File file = new File(source);
+         Scanner scanner = new Scanner(file);                                                                
 
     	  // Skip comments
     	  try {                                                                                                 
@@ -87,14 +69,15 @@ public class ejemplo {
     	    
     	    chocoList.numVariables = scanner.nextInt();                                                                   
     	    chocoList.numClauses = scanner.nextInt();
+    	    
+    	    defineVariables();
+    	    
     	  } catch (NoSuchElementException e) {
     	      throw new ParseException("Incomplete header", 0);                                                      
     	  }
     	  
-    	  System.out.print(source + " - " + chocoList.numVariables + " vars " + chocoList.numClauses + " clauses: ");                                             
     	  int numClauses = chocoList.numClauses;
     	
-    	  
     	  int i=0;
     	  try {
       	      ArrayList<Integer> currentClauses = new ArrayList<Integer>();
@@ -105,15 +88,33 @@ public class ejemplo {
     	        	  currentClauses.add(literal);
     	      
     	      if (literal == 0) {
-    	        numClauses--;
+    	          numClauses--;
         	      chocoList.clauses.add(currentClauses);
-     //   	      System.out.println(currentClauses);
-        	      currentClauses = new ArrayList<Integer>();      
+        	      
+        	      addFormula(i);
+        	      currentClauses = new ArrayList<Integer>();
+        	      i++;
     	      }
     	    }
       	      
     	  } catch (NoSuchElementException e) {
     	    throw new ParseException("Incomplete problem: " + numClauses + " clauses are missing", 0);
     	  }
+    }
+    
+    public static void addFormula(int i) {
+    	BoolVar[] used = new BoolVar[chocoList.clauses.get(i).size()];
+    	
+    	int j=0;
+    	for(Integer var: chocoList.clauses.get(i)) {
+    		if (var < 0)
+    			used[j] = variables[(-1*var)-1].not();
+    		else
+    			used[j] = variables[var-1];
+    		
+    		j++;
+    	}	
+     	
+        model.or(used).post();
     }
 }
