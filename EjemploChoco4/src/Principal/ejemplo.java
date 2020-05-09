@@ -24,10 +24,10 @@ public class ejemplo {
     public static void main(String[] args) throws IOException, ParseException {
       	// 1. Create a Model
         Model model = new Model("problem");
-        //parseStream(args[0]);
+        parseStream(args[0]);
         
-       // parseStream("CNF/LargeAutomotive_wp.cnf");
-        parseStream("CNF/ejemplo2.cnf");
+        //parseStream("CNF/LargeAutomotive_wp.cnf");
+       // parseStream("CNF/ejemplo7.cnf");
         
         ///////////////
         BoolVar[] variables = new BoolVar[chocoList.numVariables];
