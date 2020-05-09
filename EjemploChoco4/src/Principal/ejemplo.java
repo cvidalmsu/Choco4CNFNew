@@ -11,7 +11,6 @@ import java.util.Scanner;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.variables.BoolVar;
 
-
 class CNF{
 	int numVariables;
 	int numClauses;
